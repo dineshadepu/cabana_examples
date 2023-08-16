@@ -31,8 +31,11 @@ using DataTypes = Cabana::MemberTypes<double[3], // position(0)
   and member type configurations are compatible.
 */
 const int VectorLength = 8;
-using MemorySpace = Kokkos::HostSpace;
-using ExecutionSpace = Kokkos::DefaultHostExecutionSpace;
+// using MemorySpace = Kokkos::HostSpace;
+// using ExecutionSpace = Kokkos::DefaultHostExecutionSpace;
+using ExecutionSpace = Kokkos::Cuda;
+using MemorySpace = ExecutionSpace::memory_space;
+using DeviceType = Kokkos::Device<ExecutionSpace, MemorySpace>;
 using DeviceType = Kokkos::Device<ExecutionSpace, MemorySpace>;
 using AoSoAType = Cabana::AoSoA<DataTypes, DeviceType, VectorLength>;
 
@@ -41,12 +44,14 @@ using AoSoAType = Cabana::AoSoA<DataTypes, DeviceType, VectorLength>;
 // auto aosoa_velocity = Cabana::slice<2>     ( aosoa,    "aosoa_velocity");
 
 
+KOKKOS_INLINE_FUNCTION
 void compute_square_scalar(double x, double y, double * scalar_quantity){
   *scalar_quantity = x + y;
   return;
 }
 
 
+KOKKOS_INLINE_FUNCTION
 void compute_square_vector(double a, double *x, double *result){
   result[0] = a * x[0];
   result[1] = a * x[1];
@@ -56,7 +61,7 @@ void compute_square_vector(double a, double *x, double *result){
 
 
 
-void fluid_stage_1(auto aosoa, double dt, auto limits){
+void fluid_stage_1(AoSoAType aosoa, double dt, int * limits){
   auto aosoa_pos = Cabana::slice<0>     ( aosoa,    "aosoa_pos");
   auto aosoa_vel = Cabana::slice<2>          ( aosoa,    "aosoa_vel");
 
@@ -100,12 +105,12 @@ void run()
 
   auto dt = 3.;
 
-  std::vector<int> fluid_limits = {0, 12};
-  fluid_stage_1(aosoa, 2. * dt, fluid_limits);
-  for ( std::size_t i = 0; i < aosoa_pos.size(); ++i )
+  int fluid_limits[2] = {0, 12};
+  for ( std::size_t i = 0; i < aosoa_pos.size()+1000000; ++i )
     {
-      std::cout << "\n";
-      std::cout << "position of " << i << " is " << aosoa_pos( i, 0) << ", " << aosoa_pos( i, 1 ) << ", " << aosoa_pos( i, 2 ) << "\n";
+      fluid_stage_1(aosoa, 2. * dt, fluid_limits);
+      // std::cout << "\n";
+      // std::cout << "position of " << i << " is " << aosoa_pos( i, 0) << ", " << aosoa_pos( i, 1 ) << ", " << aosoa_pos( i, 2 ) << "\n";
     }
 
 }

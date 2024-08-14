@@ -33,17 +33,31 @@ using DataTypes = Cabana::MemberTypes<double[3], // position(0)
 const int VectorLength = 8;
 using MemorySpace = Kokkos::HostSpace;
 using ExecutionSpace = Kokkos::DefaultHostExecutionSpace;
-// using ExecutionSpace = Kokkos::Cuda;
-// using MemorySpace = ExecutionSpace::memory_space;
 using DeviceType = Kokkos::Device<ExecutionSpace, MemorySpace>;
 using AoSoAType = Cabana::AoSoA<DataTypes, DeviceType, VectorLength>;
 
 // auto aosoa_position = Cabana::slice<0>     ( aosoa,    "aosoa_position");
 // auto aosoa_ids = Cabana::slice<1>          ( aosoa,    "aosoa_ids");
 // auto aosoa_velocity = Cabana::slice<2>     ( aosoa,    "aosoa_velocity");
+auto create_2d_block(double length, double height, double spacing){
+  std::vector<std::vector<double>> points;
+  int x_no_points = length / spacing;
+  int y_no_points = height / spacing;
+  for(int i=0; i<=x_no_poins; i++)
+    {
+      normal.push_back(std::vector<int>());
+      for(int j=0; j<y_no_points; j++)
+	{
+	  double x = i * spacing;
+	  double y = j * spacing;
+	  normal[i].push_back(x);
+	  normal[i].push_back(y);
+	}
+    }
+}
 
-void fluid_stage_1(AoSoAType aosoa, double dt,
-		   int * limits){
+
+void fluid_stage_1(auto aosoa, double dt, auto limits){
   auto aosoa_pos = Cabana::slice<0>     ( aosoa,    "aosoa_pos");
   auto aosoa_vel = Cabana::slice<2>          ( aosoa,    "aosoa_vel");
 
@@ -68,23 +82,28 @@ void run()
   if ( comm_rank == 0 )
     std::cout << "Cabana Rigid body solver example\n" << std::endl;
 
+  /*
+    ================================================
+    Step 1
+    ================================================
+    1. Create the particles (Both fluid and boundary)
+  */
+  double fluid_length = 1.;
+  double fluid_height = 1.;
+  double fluid_spacing = 0.1;
+
+  auto x_block_points = create_2d_block(fluid_length, fluid_height, fluid_spacing);
+  no_fluid_particles = x_block_points.size();
+  /*
+    ================================================
+    End: Step 1
+    ================================================
+  */
+
   auto num_particles = 16;
   AoSoAType aosoa( "particles", num_particles );
-  auto aosoa_pos = Cabana::slice<0>     ( aosoa,    "aosoa_pos");
-  auto aosoa_vel = Cabana::slice<2>          ( aosoa,    "aosoa_vel");
-  Cabana::deep_copy( aosoa_pos, 0. );
-  Cabana::deep_copy( aosoa_vel, 1. );
-
-  auto dt = 3.;
-
-  int fluid_limits[2] = {0, num_particles};
-  fluid_stage_1(aosoa, 2. * dt, fluid_limits);
-  for ( std::size_t i = 0; i < aosoa_pos.size()+10000000; ++i )
-    {
-      fluid_stage_1(aosoa, 2. * dt, fluid_limits);
-      // std::cout << "\n";
-      // std::cout << "position of " << i << " is " << aosoa_pos( i, 0) << ", " << aosoa_pos( i, 1 ) << ", " << aosoa_pos( i, 2 ) << "\n";
-    }
+  auto aosoa_pos = Cabana::slice<0>( aosoa,    "aosoa_pos");
+  auto aosoa_vel = Cabana::slice<2>( aosoa,    "aosoa_vel");
 
 }
 

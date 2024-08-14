@@ -10,14 +10,27 @@ import os, sys
 #### disable automatic camera reset on 'Show'
 paraview.simple._DisableFirstRenderCameraReset()
 
-
-# if len(sys.argv) > 1:
-#     files_start = sys.argv[1]
-# else:
-#     files_start = "particles"
-
+# =====================================
+# start: get the files and sort
+# =====================================
 files = [filename for filename in os.listdir('.') if filename.startswith("particles") and filename.endswith("xmf") ]
 files.sort()
+files_num = []
+for f in files:
+    f_last = f[10:]
+    files_num.append(int(f_last[:-4]))
+files_num.sort()
+
+sorted_files = []
+for num in files_num:
+    sorted_files.append("particles_" + str(num) + ".xmf")
+print(sorted_files)
+files = sorted_files
+# =====================================
+# end: get the files and sort
+# =====================================
+
+
 # create a new 'XDMF Reader'
 particles_0xmf = XDMFReader(registrationName='particles_0.xmf*', FileNames=files)
 particles_0xmf.PointArrayStatus = ['density', 'force', 'ids', 'mass']

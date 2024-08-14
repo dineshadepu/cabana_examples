@@ -49,12 +49,11 @@ const int VectorLength = 8;
 // using ExecutionSpace = Kokkos::OpenMP;
 // using MemorySpace = ExecutionSpace::memory_space;
 
-// using ExecutionSpace = Kokkos::DefaultHostExecutionSpace;
-// using MemorySpace = ExecutionSpace::memory_space;
-// Kokkos::HostSpace;
+using ExecutionSpace = Kokkos::DefaultHostExecutionSpace;
+using MemorySpace = Kokkos::HostSpace;
 
-using ExecutionSpace = Kokkos::Cuda;
-using MemorySpace = ExecutionSpace::memory_space;
+// using ExecutionSpace = Kokkos::Cuda;
+// using MemorySpace = ExecutionSpace::memory_space;
 
 using DeviceType = Kokkos::Device<ExecutionSpace, MemorySpace>;
 using AoSoAType = Cabana::AoSoA<DataTypes, DeviceType, VectorLength>;

@@ -31,10 +31,10 @@ using DataTypes = Cabana::MemberTypes<double[3], // position(0)
   and member type configurations are compatible.
 */
 const int VectorLength = 8;
-// using MemorySpace = Kokkos::HostSpace;
-// using ExecutionSpace = Kokkos::DefaultHostExecutionSpace;
-using ExecutionSpace = Kokkos::Cuda;
-using MemorySpace = ExecutionSpace::memory_space;
+using MemorySpace = Kokkos::HostSpace;
+using ExecutionSpace = Kokkos::DefaultHostExecutionSpace;
+// using ExecutionSpace = Kokkos::Cuda;
+// using MemorySpace = ExecutionSpace::memory_space;
 using DeviceType = Kokkos::Device<ExecutionSpace, MemorySpace>;
 using DeviceType = Kokkos::Device<ExecutionSpace, MemorySpace>;
 using AoSoAType = Cabana::AoSoA<DataTypes, DeviceType, VectorLength>;
